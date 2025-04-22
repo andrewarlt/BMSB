@@ -11,32 +11,30 @@ app = Flask(__name__)
 def index():
     return "The API is running!"
 
-# Create data route
-@app.route("/BMSB_sites", methods=["GET"])
-def bmsb_sites():
+# General DB to GeoJSON function
+def database_to_geojson(table_name):
     # Connect to the database
     conn = psycopg2.connect(
         host=os.environ.get("DB_HOST"),
         database=os.environ.get("DB_NAME"),
         user=os.environ.get("DB_USER"),
         password=os.environ.get("DB_PASSWORD")
-    )
-    cursor = conn.cursor()
+        )
 
     # Retrieve data from the database
     with conn.cursor() as cur:
-        query = """
+        query = f"""
         SELECT JSON_BUILD_OBJECT(
             'type', 'FeatureCollection',
             'features', JSON_AGG(
                 JSON_BUILD_OBJECT(
-                    ST_AsGeoJSON(table.*)::json
+                    ST_AsGeoJSON({table_name}.*)::json
                 )
             )
-            FROM table;
+            FROM {table_name};
         """
 
-        cursor.execute(query)
+        cur.execute(query)
 
         data = cur.fetchall()
 
@@ -45,6 +43,14 @@ def bmsb_sites():
 
     # Returning the data
     return data[0][0]
+
+# Create data route
+@app.route("/BMSB_sites", methods=["GET"])
+def bmsb_sites():
+    # Call general function
+    bmsb = database_to_geojson("BMSB_sites")
+
+    return bmsb
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
