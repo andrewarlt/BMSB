@@ -292,6 +292,8 @@ def validate(predictions, truth, thres=0.5):
 ##### Main Code ###########################################################################
 ###########################################################################################
 
+print("Extracting information from source files...")
+
 # Calculate number of timesteps
 number_timesteps = int(end_evaluation_date[-4:]) * 12 + int(end_evaluation_date[:2]) - int(model_start_date[-4:]) * 12 - int(model_start_date[:2])
 
@@ -338,6 +340,8 @@ attract = attract_data[attract_fld].to_numpy().astype(float)
 # store all results
 all_results = []
 
+print("Run inverse distance models...")
+
 ## INVERSE DISTANCE MODEL
 for mod in invd_models:
     if len(mod) != 2:
@@ -345,6 +349,8 @@ for mod in invd_models:
     p = inverse_distance_probabilities(distances, alpha=mod[0], p_max=mod[1])
     res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
     all_results.append(res)
+
+print("Run gravity models...")
 
 ## GRAVITY MODEL
 for mod in grav_models:
@@ -354,6 +360,8 @@ for mod in grav_models:
     res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
     all_results.append(res)
 
+print("Run huff models...")
+
 ## HUFF MODEL
 for mod in huff_models:
     if len(mod) != 3:
@@ -361,6 +369,8 @@ for mod in huff_models:
     p = huff_model(distances, attract, alpha=mod[0], beta=mod[1], p_max=mod[2])
     res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
     all_results.append(res)
+
+print("Writing data to shapefile...")
 
 ## Get list of fields to add
 new_fields = []
@@ -391,6 +401,8 @@ with arcpy.da.UpdateCursor("memory/ctus", [unique_fld] + new_fields) as cursor:
 # Create output shapefile
 arcpy.management.Delete(working_dir + "/" + output_shp)
 arcpy.conversion.ExportFeatures("memory/ctus", working_dir + "/" + output_shp)
+
+print("Validate models...")
 
 # Validate each model
 metrics = []
