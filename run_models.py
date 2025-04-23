@@ -390,12 +390,14 @@ for i in huff_models:
 # Add new fields
 for fld in new_fields:
     arcpy.management.AddField("memory/ctus", fld, "FLOAT")
+arcpy.management.AddField("memory/ctus", "START_PRES", "LONG")
 
 # Populate new fields
-with arcpy.da.UpdateCursor("memory/ctus", [unique_fld] + new_fields) as cursor:
+with arcpy.da.UpdateCursor("memory/ctus", [unique_fld] + new_fields + ["START_PRES"]) as cursor:
     for row in cursor:
         for fld in range(0,len(new_fields)):
             row[fld+1] = all_results[fld][-1][row[0]]
+        row[-1] = start_presence[row[0]]
         cursor.updateRow(row)
 
 # Create output shapefile
