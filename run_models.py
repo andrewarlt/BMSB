@@ -284,8 +284,9 @@ def validate(predictions, truth, thres=0.5):
     precision = TP / (TP+FP)
     accuracy = (TP+TN) / (TP+FP+FN+TN)
     recall = TP / (TP+FN)
+    f1_score = 2* (precision*recall) / (precision + recall)
 
-    return((precision, accuracy, recall, TP, FP, FN, TN))  
+    return((precision, accuracy, recall, f1_score, TP, FP, FN, TN))  
 
 
 ###########################################################################################
@@ -414,7 +415,7 @@ for mod in all_results:
     metrics.append(validate(mod[1:,:], truth, thres=val_threshold))
 
 # Write model metrics to csv
-column_names = ['model_name', 'alpha', 'beta', 'p_max', 'precision', 'accuracy', 'recall', 'TP', 'FP', 'FN', 'TN']
+column_names = ['model_name', 'alpha', 'beta', 'p_max', 'precision', 'accuracy', 'recall', 'f1_score', 'TP', 'FP', 'FN', 'TN']
 df = pd.DataFrame(columns=column_names)
 all_params = invd_models + grav_models + huff_models
 
