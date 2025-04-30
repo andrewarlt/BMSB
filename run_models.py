@@ -310,7 +310,7 @@ for i in range(1,number_timesteps+1):
     val_months.append(str(month).zfill(2) + "/" + str(year).zfill(4))
 
 # Copy ctus to memory
-arcpy.conversion.ExportFeatures(working_dir + "/" + ctu_shp, "memory/ctus", sort_field = unique_fld)
+arcpy.conversion.ExportFeatures(working_dir + "/" + ctu_shp, "memory/ctus", sort_field = unique_fld + " ASCENDING")
 
 # Get populations and distances from ctu file
 populations = arcpy.da.FeatureClassToNumPyArray("memory/ctus", pop_fld).astype(int)
