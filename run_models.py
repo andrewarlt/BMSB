@@ -20,13 +20,13 @@ pop_fld = "POPULATION"
 
 presence_csv = "cumulative_bmsb_data.csv"
 
-model_start_date = "12/2023"
+model_start_date = "12/2022"
 end_evaluation_date = "07/2024"
 
 attraction_csv = "zonalhist_attractiveness.csv"
 attract_fld = "attractiveness"
 
-val_threshold = 0.5
+val_threshold = 0.4
 
 # inverse distance models to run - list of tuples (alpha, p_max)
 invd_models = [(1, 0.5), (1.5, 0.5), (2, 0.5), (2.5, 0.5)]
@@ -415,16 +415,16 @@ for mod in all_results:
     metrics.append(validate(mod[1:,:], truth, thres=val_threshold))
 
 # Write model metrics to csv
-column_names = ['model_name', 'alpha', 'beta', 'p_max', 'precision', 'accuracy', 'recall', 'f1_score', 'TP', 'FP', 'FN', 'TN']
+column_names = ['model_name', 'alpha', 'beta', 'p_max',  'val_threshold', 'start_date', 'precision', 'accuracy', 'recall', 'f1_score', 'TP', 'FP', 'FN', 'TN']
 df = pd.DataFrame(columns=column_names)
 all_params = invd_models + grav_models + huff_models
 
 for i in range(len(new_fields)):
     to_add = [new_fields[i]]
     if len(all_params[i]) == 2:
-        to_add += [all_params[i][0]] + [None] + [all_params[i][1]]
+        to_add += [all_params[i][0]] + [None] + [all_params[i][1]] + [val_threshold, model_start_date]
     if len(all_params[i]) == 3:
-        to_add += list(all_params[i])
+        to_add += list(all_params[i]) + [val_threshold, model_start_date]
     to_add += metrics[i]
     df.loc[len(df)] = to_add
 
