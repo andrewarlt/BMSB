@@ -1,7 +1,5 @@
 #### This file will run many different iterations of the model, append the results to unique columns of the shapefile and validate the results.
 
-import arcpy.conversion
-import arcpy.management
 import numpy as np
 import copy
 import arcpy
