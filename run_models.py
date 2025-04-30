@@ -1,5 +1,6 @@
 #### This file will run many different iterations of the model, append the results to unique columns of the shapefile and validate the results.
 
+import arcpy.management
 import numpy as np
 import copy
 import arcpy
@@ -311,15 +312,18 @@ for i in range(1,number_timesteps+1):
 arcpy.conversion.ExportFeatures(working_dir + "/" + ctu_shp, "memory/ctus", sort_field = unique_fld + " ASCENDING")
 
 # Get populations and distances from ctu file
-populations = arcpy.da.FeatureClassToNumPyArray("memory/ctus", pop_fld).astype(int)
+populations = arcpy.da.FeatureClassToNumPyArray("memory/ctus", [unique_fld,pop_fld])
+
+populations = np.array(sorted(populations, key=lambda x: x[0]))
+populations = np.array([int(i[1]) for i in populations])
 
 # Make OID/UNIQUE_ID dictionary
+arcpy.management.FeatureToPoint("memory/ctus", "memory/ctu_points")
 codes_dict = {}
-with arcpy.da.SearchCursor("memory/ctus", ["OBJECTID", unique_fld]) as cursor:
+with arcpy.da.SearchCursor("memory/ctu_points", ["OBJECTID", unique_fld]) as cursor:
     for row in cursor:
         codes_dict[row[0]] = row[1]
 
-arcpy.management.FeatureToPoint("memory/ctus", "memory/ctu_points")
 arcpy.analysis.GenerateNearTable("memory/ctu_points", "memory/ctu_points", "memory/ctu_distances", closest="ALL", distance_unit="Miles")
 
 # put distances into array
@@ -327,7 +331,7 @@ distances = np.zeros([2743, 2743])
 with arcpy.da.SearchCursor("memory/ctu_distances", ["IN_FID","NEAR_FID","NEAR_DIST"]) as cursor:
     for row in cursor:
         distances[codes_dict[row[0]],codes_dict[row[1]]] = row[2]
-
+        
 # get presence information
 bmsb_data = pd.read_csv(working_dir + "/" + presence_csv).sort_values(unique_fld)
 start_presence = bmsb_data[model_start_date].to_numpy().astype(int)
