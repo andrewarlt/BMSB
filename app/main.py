@@ -31,7 +31,7 @@ def database_to_geojson(table_name):
                     ST_AsGeoJSON({table_name}.*)::json
                 )
             )
-            FROM {table_name};
+            FROM {table_name}
         """
 
         cur.execute(query)
