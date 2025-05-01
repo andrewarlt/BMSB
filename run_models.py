@@ -76,25 +76,25 @@ def model(presence, probabilities, num_cycles, prob_start=0, print_flag=False, r
     # Check inputs
     if num_dims < 2 or num_dims > 3:
         print("ERROR: incorrect number of dimensions in probability array")
-        return
+        quit()
     if probabilities.shape[0] != probabilities.shape[1]:
         print("ERROR: Probabilities Matrix not square")
-        return
+        quit()
     if presence.shape[0] != probabilities.shape[0]:
         print("ERROR: Presence and Probabilities are not the same size")
-        return
+        quit()
     if np.max(probabilities) > 1 or np.max(probabilities) < 0:
         print("ERROR: Invalid Probability value")
-        return
+        quit()
     if len(set(presence) - set([0,1])) > 0:
         print("ERROR: Presence is not binary")
-        return
+        quit()
     if num_cycles < 1:
         print("ERROR: Number of cycles cannot be less than 1")
-        return
+        quit()
     if num_dims == 3 and prob_start >= num_probs:
         print("ERROR: Probability start index is greater than the number of probabilities")
-        return
+        quit()
 
     # start state
     current_state = copy.deepcopy(presence).astype(np.float64)
@@ -146,13 +146,13 @@ def inverse_distance_probabilities(distances, alpha=1, p_max=0.5):
     # Check inputs
     if np_distances.shape[0] != np_distances.shape[1]:
         print("ERROR: Distance Matrix not square")
-        return
+        quit()
     if np.min(np_distances < 0):
         print("ERROR: Negative Distance")
-        return
+        quit()
     if p_max < 0 or p_max > 1:
         print("ERROR: Invalid value of p_max")
-        return
+        quit()
 
     # Function
     new_distances = (np_distances < 1).astype(int) + np.multiply((np_distances >= 1).astype(int), np_distances) # replace everything less than 1 with 1
@@ -180,19 +180,19 @@ def gravity_model(distances, populations, alpha=0.1, p_max=0.5):
     # check inputs
     if np_distances.shape[0] != np_distances.shape[1]:
         print("ERROR: Distance Matrix not square")
-        return
+        quit()
     if np.min(np_distances < 0):
         print("ERROR: Negative Distance")
-        return
+        quit()
     if np_distances.shape[0] != np_populations.shape[0]:
         print("ERROR: Distance and Populations are not the same size")
-        return
+        quit()
     if np.min(np_populations) < 0:
         print("ERROR: Negative Population")
-        return
+        quit()
     if p_max < 0 or p_max > 1:
         print("ERROR: Invalid value of p_max")
-        return
+        quit()
 
     # Function
     new_populations = np_populations / 1000 # prevent integer overflow
@@ -222,19 +222,19 @@ def huff_model(distances, attractiveness, alpha=0.1, beta=0.1, p_max=0.5):
     # Error handling
     if np_distances.shape[0] != np_distances.shape[1]:
         print("ERROR: Distance Matrix not square")
-        return
+        quit()
     if np.min(np_distances < 0):
         print("ERROR: Negative Distance")
-        return
+        quit()
     if np_distances.shape[0] != np_attractiveness.shape[0]:
         print("ERROR: Distance and Populations are not the same size")
-        return
+        quit()
     if np.min(np_attractiveness) < 0 or np.max(np_attractiveness) > 1:
         print("ERROR: Attractivness not on scale [0,1]")
-        return
+        quit()
     if p_max < 0 or p_max > 1:
         print("ERROR: Invalid value of p_max")
-        return
+        quit()
 
     # Function
     new_distances = (np_distances < 1).astype(int) + np.multiply((np_distances >= 1).astype(int), np_distances) # replace everything less than 1 with 1
@@ -263,12 +263,13 @@ def validate(predictions, truth, thres=0.5):
     # Error handling
     if np_predictions.shape != np_truth.shape:
         print("ERROR: Predictions and truth arrays do not have the same dimensions")
-        return
+        quit()
     if np.min(np_predictions) < 0 or np.max(np_predictions) > 1:
         print("ERROR: Predictions not on scale [0,1]")
+        quit()
     if len(set(np_truth.flatten()) - set([0,1])) > 0:
         print("ERROR: Presence is not binary")
-        return
+        quit()
     
     # Make predictions
     np_predictions = (np_predictions > thres).astype(int)
@@ -331,7 +332,7 @@ distances = np.zeros([2743, 2743])
 with arcpy.da.SearchCursor("memory/ctu_distances", ["IN_FID","NEAR_FID","NEAR_DIST"]) as cursor:
     for row in cursor:
         distances[codes_dict[row[0]],codes_dict[row[1]]] = row[2]
-        
+
 # get presence information
 bmsb_data = pd.read_csv(working_dir + "/" + presence_csv).sort_values(unique_fld)
 start_presence = bmsb_data[model_start_date].to_numpy().astype(int)
@@ -349,6 +350,7 @@ print("Run inverse distance models...")
 for mod in invd_models:
     if len(mod) != 2:
         print("ERROR: Inverse distance model tuple does not have length 2")
+        quit()
     p = inverse_distance_probabilities(distances, alpha=mod[0], p_max=mod[1])
     res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
     all_results.append(res)
@@ -359,6 +361,7 @@ print("Run gravity models...")
 for mod in grav_models:
     if len(mod) != 2:
         print("ERROR: Gravity model tuple does not have length 2")
+        quit()
     p = gravity_model(distances, populations, alpha=mod[0], p_max=mod[1])
     res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
     all_results.append(res)
@@ -369,6 +372,7 @@ print("Run huff models...")
 for mod in huff_models:
     if len(mod) != 3:
         print("ERROR: Huff model tuple does not have length 3")
+        quit()
     p = huff_model(distances, attract, alpha=mod[0], beta=mod[1], p_max=mod[2])
     res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
     all_results.append(res)
