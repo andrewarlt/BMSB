@@ -45,10 +45,10 @@ def database_to_geojson(table_name):
     return data[0][0]
 
 # Create data route
-@app.route("/BMSB_sites", methods=["GET"])
+@app.route("/bmsb, methods=["GET"])
 def bmsb_sites():
     # Call general function
-    bmsb = database_to_geojson("BMSB_sites")
+    bmsb = database_to_geojson("bmsb")
 
     return bmsb
 
