@@ -1,6 +1,5 @@
 #### This file will run many different iterations of the model, append the results to unique columns of the shapefile and validate the results.
 
-import arcpy.management
 import numpy as np
 import copy
 import arcpy
@@ -21,6 +20,7 @@ presence_csv = "cumulative_bmsb_data.csv"
 
 model_start_date = "12/2022"
 end_evaluation_date = "07/2024"
+prediction_date = "06/2025"
 
 attraction_csv = "zonalhist_attractiveness.csv"
 attract_fld = "attractiveness"
@@ -156,7 +156,7 @@ def inverse_distance_probabilities(distances, alpha=1, p_max=0.5):
 
     # Function
     new_distances = (np_distances < 1).astype(int) + np.multiply((np_distances >= 1).astype(int), np_distances) # replace everything less than 1 with 1
-    result = np.power(np.power(new_distances, alpha), -1)
+    result = np.power(new_distances, -1*alpha)
 
     # Rescale array
     arr_min = np.min(result)
@@ -198,8 +198,7 @@ def gravity_model(distances, populations, alpha=0.1, p_max=0.5):
     new_populations = np_populations / 1000 # prevent integer overflow
     new_distances = (np_distances < 1).astype(int) + np.multiply((np_distances >= 1).astype(int), np_distances) # replace everything less than 1 with 1
     weight = np.multiply(np.tile(np.atleast_2d(new_populations).T, (1, len(new_populations))), np.tile(new_populations, (len(new_populations), 1)))
-    result = np.power(np.divide(weight, new_distances), alpha)
-
+    result = np.divide(weight, np.power(new_distances, alpha))
     # Rescale array
     arr_min = np.min(result)
     arr_max = np.max(result)
@@ -296,11 +295,13 @@ def validate(predictions, truth, thres=0.5):
 print("Extracting information from source files...")
 
 # Calculate number of timesteps
-number_timesteps = int(end_evaluation_date[-4:]) * 12 + int(end_evaluation_date[:2]) - int(model_start_date[-4:]) * 12 - int(model_start_date[:2])
+validation_timesteps = int(end_evaluation_date[-4:]) * 12 + int(end_evaluation_date[:2]) - int(model_start_date[-4:]) * 12 - int(model_start_date[:2])
+final_timesteps = int(prediction_date[-4:]) * 12 + int(prediction_date[:2]) - int(end_evaluation_date[-4:]) * 12 - int(end_evaluation_date[:2])
+total_timesteps = validation_timesteps + final_timesteps
 
 # Make list of validation months
 val_months = []
-for i in range(1,number_timesteps+1):
+for i in range(1,validation_timesteps+1):
     month = i + int(model_start_date[:2])
     year = int(model_start_date[-4:])
     year += month // 12
@@ -352,7 +353,7 @@ for mod in invd_models:
         print("ERROR: Inverse distance model tuple does not have length 2")
         quit()
     p = inverse_distance_probabilities(distances, alpha=mod[0], p_max=mod[1])
-    res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
+    res = model(start_presence, p, num_cycles=total_timesteps, return_all=True)
     all_results.append(res)
 
 print("Run gravity models...")
@@ -363,7 +364,7 @@ for mod in grav_models:
         print("ERROR: Gravity model tuple does not have length 2")
         quit()
     p = gravity_model(distances, populations, alpha=mod[0], p_max=mod[1])
-    res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
+    res = model(start_presence, p, num_cycles=total_timesteps, return_all=True)
     all_results.append(res)
 
 print("Run huff models...")
@@ -374,7 +375,7 @@ for mod in huff_models:
         print("ERROR: Huff model tuple does not have length 3")
         quit()
     p = huff_model(distances, attract, alpha=mod[0], beta=mod[1], p_max=mod[2])
-    res = model(start_presence, p, num_cycles=number_timesteps, return_all=True)
+    res = model(start_presence, p, num_cycles=total_timesteps, return_all=True)
     all_results.append(res)
 
 print("Writing data to shapefile...")
@@ -418,7 +419,7 @@ metrics = []
 for mod in all_results:
     # build truth array
     truth = bmsb_data[val_months].to_numpy().astype(int).T
-    metrics.append(validate(mod[1:,:], truth, thres=val_threshold))
+    metrics.append(validate(mod[1:-1*final_timesteps,:], truth, thres=val_threshold))
 
 # Write model metrics to csv
 column_names = ['model_name', 'alpha', 'beta', 'p_max',  'val_threshold', 'start_date', 'precision', 'accuracy', 'recall', 'f1_score', 'TP', 'FP', 'FN', 'TN']
