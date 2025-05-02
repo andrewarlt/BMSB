@@ -12,31 +12,34 @@ def index():
     return "The API is running!"
 
 # General DB to GeoJSON function
-def database_to_geojson(table_name):
+def database_to_geojson(table_name, geom_column='geom'):
     # Connect to the database
     conn = psycopg2.connect(
         host=os.environ.get("DB_HOST"),
         database=os.environ.get("DB_NAME"),
         user=os.environ.get("DB_USER"),
         password=os.environ.get("DB_PASSWORD")
-        )
+    )
 
     # Retrieve data from the database
     with conn.cursor() as cur:
         query = f"""
         SELECT JSON_BUILD_OBJECT(
-            'type', 'FeatureCollection',
-            'features', JSON_AGG(
-                JSON_BUILD_OBJECT(
-                    ST_AsGeoJSON({table_name}.*)::json
+                'type', 'FeatureCollection',
+                'features', JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'type', 'Feature',
+                        'geometry', ST_AsGeoJSON(t.{geom_column})::json,
+                        'properties', TO_JSONB(t) - '{geom_column}'
+                    )
                 )
             )
-            FROM {table_name}
+        FROM (SELECT * FROM {table_name}) AS t;
         """
 
         cur.execute(query)
 
-        data = cur.fetchall()
+        data = cur.fetchone()
 
     # Close the connection
     conn.close()
@@ -50,7 +53,7 @@ def bmsb_sites():
     # Call general function
     bmsb = database_to_geojson("public.bmsb")
 
-    return bmsb
+    return Response(json.dumps(geojson), mimetype="application/json")
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
