@@ -7,8 +7,8 @@ Folder and file structure:
     - **bmsb_combined_presence_matrix.csv** - csv required to run run_models.py
     - **BMSB_Data.ipynb** - Extract inaturalist bmsb data and combines in with the mn dnr data
     - **BMSBMANAGEMENT.ipynb** - Extracts mn dnr bmsb data from the mn geocommons
-    - **CDD_BMSB.ipynb** - Notebook for extract and preping Cooling Degree Day data, which was not used in the final project, but was a planned addition
-    - **CDD.ipynb** - Notebook for extract and preping Cooling Degree Day data, which was not used in the final project, but was a planned addition
+    - **CDD_BMSB.ipynb** - Notebook for interpolating and joining Cooling Degree Day data with CTUs, which was not used in the final project, but was a planned addition
+    - **CDD.ipynb** - Notebook for retrieving and QA/QC on Cooling Degree Day data, which was not used in the final project, but was a planned addition
     - **ctu.ipynb** - Data extract and prepration for the CTU units
     - **landcover_bmsb_final.ipynb** - Notebook for extract and calculating land cover information for each of the CTU units.
     - **zonalhist_attractiveness.csv** - csv required to run run_models.py
