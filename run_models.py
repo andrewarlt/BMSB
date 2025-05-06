@@ -1,4 +1,10 @@
-#### This file will run many different iterations of the model, append the results to unique columns of the shapefile and validate the results.
+##### GIS 5572 BMSB run models script
+#     Author: Arlan Hegenbarth 4/2025
+#     - This script will run many different iterations of the model, append the results to unique columns of the shapefile and validate the results.
+#     - This script requires the presence of three other files to run:
+#       - cumulative_bmsb_data.csv
+#       - ctus_with_id.shp
+#       - zonalhist_attractiveness.csv
 
 import numpy as np
 import copy
@@ -12,20 +18,22 @@ import pandas as pd
 # data information - all files should be in the working directory
 working_dir = r"C:\Users\aoheg\Desktop\School\GIS 5572\model_dir"
 
+# ctu information
 ctu_shp = "ctus_with_id.shp"
-unique_fld = "UNIQUE_ID"
+unique_fld = "UNIQUE_ID" # Present in all three files
 pop_fld = "POPULATION"
 
 presence_csv = "cumulative_bmsb_data.csv"
 
-model_start_date = "12/2022"
-end_evaluation_date = "07/2024"
-prediction_date = "06/2025"
+model_start_date = "12/2022" # Last dast of data that the model has access to
+end_evaluation_date = "07/2024" # End of evaluation time window
+prediction_date = "06/2025" # The prediction data that is output in the shapefile
 
 attraction_csv = "zonalhist_attractiveness.csv"
 attract_fld = "attractiveness"
 
-val_threshold = 0.4
+# Threshold for a probability to be considered True
+val_threshold = 0.4 
 
 # inverse distance models to run - list of tuples (alpha, p_max)
 invd_models = [(1, 0.5), (1.5, 0.5), (2, 0.5), (2.5, 0.5)]
@@ -436,3 +444,5 @@ for i in range(len(new_fields)):
     df.loc[len(df)] = to_add
 
 df.to_csv(working_dir + "/" + metrics_csv) 
+
+print("done!")
