@@ -21,29 +21,33 @@ def database_to_geojson(table_name, geom_column='geometry'):
         database=os.environ.get("DB_NAME"),
         user=os.environ.get("DB_USER"),
         password=os.environ.get("DB_PASSWORD")
-    port = os.environ.get("DB_PORT")
     )
 
-    # retrieve the data
+    # Retrieve data from the database
     with conn.cursor() as cur:
         query = f"""
-            SELECT JSON_BUILD_OBJECT(
+        SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
                 'features', JSON_AGG(
-                    ST_AsGeoJSON({table_name}.*)::json
+                    JSON_BUILD_OBJECT(
+                        'type', 'Feature',
+                        'geometry', ST_AsGeoJSON(t.{geom_column})::json,
+                        'properties', TO_JSONB(t) - '{geom_column}'
+                    )
                 )
             )
-            FROM {table_name};
-            """
+        FROM (SELECT * FROM {table_name}) AS t;
+        """
+
         cur.execute(query)
 
-        data = cur.fetchall()
-    # close the connection
+        data = cur.fetchone()
+
+    # Close the connection
     conn.close()
 
-    # return the data
+    # Returning the data
     return data[0][0]
-
 
 # Create data route
 @app.route("/bmsb", methods=["GET"])
