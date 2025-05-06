@@ -10,7 +10,6 @@ Folder and file structure:
     - **CDD_BMSB.ipynb** - Notebook for extract and preping Cooling Degree Day data, which was not used in the final project, but was a planned addition
     - **CDD.ipynb** - Notebook for extract and preping Cooling Degree Day data, which was not used in the final project, but was a planned addition
     - **ctu.ipynb** - Data extract and prepration for the CTU units
-    - **landcover_bmsb.ipynb** - Notebook for extract and calculating land cover information for each of the CTU units.
     - **landcover_bmsb_final.ipynb** - Notebook for extract and calculating land cover information for each of the CTU units.
     - **zonalhist_attractiveness.csv** - csv required to run run_models.py
 - **BMSB_PostGIS.ipynb** - Notebook for pushing model results from local shapefile to cloud database
