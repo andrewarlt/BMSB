@@ -54,7 +54,7 @@ def database_to_geojson(table_name, geom_column='geometry'):
 @app.route("/bmsb", methods=["GET"])
 def bmsb_sites():
     # Call general function
-    bmsb = database_to_geojson("public.bmsb")
+    bmsb = database_to_geojson("public.bmsb_points")
 
     return Response(json.dumps(bmsb), mimetype="application/json")
 
