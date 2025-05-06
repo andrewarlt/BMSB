@@ -1,5 +1,7 @@
 import os
 import psycopg2
+import json
+from flask import Response
 from flask import Flask
 
 
@@ -53,7 +55,7 @@ def bmsb_sites():
     # Call general function
     bmsb = database_to_geojson("public.bmsb")
 
-    return Response(json.dumps(geojson), mimetype="application/json")
+    return Response(json.dumps(bmsb), mimetype="application/json")
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
