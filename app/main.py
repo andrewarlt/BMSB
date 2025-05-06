@@ -20,7 +20,7 @@ def database_to_geojson(table_name, geom_column='geometry'):
         host=os.environ.get("DB_HOST"),
         database=os.environ.get("DB_NAME"),
         user=os.environ.get("DB_USER"),
-        password=os.environ.get("DB_PASSWORD")
+        password=os.environ.get("DB_PASSWORD"),
         pot = os.environ.get("DB_PORT")
     )
 
