@@ -21,7 +21,7 @@ def database_to_geojson(table_name, geom_column='geometry'):
         database=os.environ.get("DB_NAME"),
         user=os.environ.get("DB_USER"),
         password=os.environ.get("DB_PASSWORD"),
-        pot = os.environ.get("DB_PORT")
+        port = os.environ.get("DB_PORT")
     )
 
     # Retrieve data from the database
