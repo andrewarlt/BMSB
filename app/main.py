@@ -14,7 +14,7 @@ def index():
     return "The API is running!"
 
 # General DB to GeoJSON function
-def database_to_geojson(table_name, geom_column='geom'):
+def database_to_geojson(table_name, geom_column='geometry'):
     # Connect to the database
     conn = psycopg2.connect(
         host=os.environ.get("DB_HOST"),
