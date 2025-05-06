@@ -48,7 +48,7 @@ def database_to_geojson(table_name, geom_column='geometry'):
     conn.close()
 
     # Returning the data
-    return data[0][0]
+    return data
 
 # Create data route
 @app.route("/bmsb", methods=["GET"])
